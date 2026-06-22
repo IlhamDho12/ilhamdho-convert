@@ -176,17 +176,9 @@ export default function SplitPdf({ onBack, addToast }) {
           <Loader message={pdfFile ? "Sedang merender halaman PDF..." : "Sedang memuat dokumen..."} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '16px',
-              gap: '16px'
-            }}>
+             <div className="tool-action-header">
               <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{pdfFile.name}</h4>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 600, wordBreak: 'break-all' }}>{pdfFile.name}</h4>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                   {(pdfFile.size / 1024 / 1024).toFixed(2)} MB • {pagesCount} Halaman
                 </p>
@@ -296,9 +288,9 @@ export default function SplitPdf({ onBack, addToast }) {
                   </button>
                 </div>
 
-                <div style={{
+                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 120px), 1fr))',
                   gap: '20px',
                   maxHeight: '45vh',
                   overflowY: 'auto',

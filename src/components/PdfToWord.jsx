@@ -184,15 +184,9 @@ export default function PdfToWord({ onBack, addToast }) {
           <Loader message="Sedang mengekstrak tata letak dokumen PDF..." />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '16px'
-            }}>
+             <div className="tool-action-header">
               <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{pdfFile.name}</h4>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 600, wordBreak: 'break-all' }}>{pdfFile.name}</h4>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                   {(pdfFile.size / 1024 / 1024).toFixed(2)} MB • {pagesCount} Halaman
                 </p>

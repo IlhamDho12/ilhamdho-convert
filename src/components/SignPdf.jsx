@@ -105,8 +105,12 @@ export default function SignPdf({ onBack, addToast }) {
     
     // Get mouse/touch coordinates relative to canvas
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    
+    // Scale coords to match internal canvas resolution
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((clientY - rect.top) / rect.height) * canvas.height;
     
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -114,13 +118,17 @@ export default function SignPdf({ onBack, addToast }) {
 
   const draw = (e) => {
     if (!isDrawingRef.current || !drawCanvasRef.current) return;
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     const canvas = drawCanvasRef.current;
     const ctx = canvas.getContext('2d');
     
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    
+    // Scale coords to match internal canvas resolution
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((clientY - rect.top) / rect.height) * canvas.height;
     
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -211,13 +219,14 @@ export default function SignPdf({ onBack, addToast }) {
     setSelectedSigId(null);
   };
 
-  // Simple drag signature logic
-  const handleSigMouseDown = (id, e) => {
+  // Drag signature logic with unified mouse & touch events
+  const handleSigDragStart = (id, e) => {
     e.stopPropagation();
-    e.preventDefault();
     setSelectedSigId(id);
-    const startX = e.clientX;
-    const startY = e.clientY;
+    
+    const isTouch = e.type === 'touchstart';
+    const startX = isTouch ? e.touches[0].clientX : e.clientX;
+    const startY = isTouch ? e.touches[0].clientY : e.clientY;
     
     const sigIndex = placedSignatures.findIndex(sig => sig.id === id);
     if (sigIndex === -1) return;
@@ -225,9 +234,11 @@ export default function SignPdf({ onBack, addToast }) {
     const originalX = placedSignatures[sigIndex].x;
     const originalY = placedSignatures[sigIndex].y;
     
-    const handleMouseMove = (moveEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+    const handleMove = (moveEvent) => {
+      const currentX = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const currentY = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientY : moveEvent.clientY;
+      const dx = currentX - startX;
+      const dy = currentY - startY;
       
       setPlacedSignatures(prev => prev.map(sig => {
         if (sig.id === id) {
@@ -241,13 +252,62 @@ export default function SignPdf({ onBack, addToast }) {
       }));
     };
     
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+    const handleEnd = () => {
+      if (isTouch) {
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
+      } else {
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
+      }
     };
     
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    if (isTouch) {
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchend', handleEnd);
+    } else {
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+    }
+  };
+
+  // Resize signature logic with unified mouse & touch events
+  const handleResizeStart = (id, e) => {
+    e.stopPropagation();
+    const isTouch = e.type === 'touchstart';
+    const startX = isTouch ? e.touches[0].clientX : e.clientX;
+    
+    const sigIndex = placedSignatures.findIndex(sig => sig.id === id);
+    if (sigIndex === -1) return;
+    
+    const startWidth = placedSignatures[sigIndex].width;
+    
+    const handleResizeMove = (moveEvent) => {
+      const currentX = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const dx = currentX - startX;
+      const newWidth = Math.max(50, startWidth + dx);
+      const newHeight = newWidth / 2; // maintain 2:1 ratio
+      
+      setPlacedSignatures(prev => prev.map(s => s.id === id ? { ...s, width: newWidth, height: newHeight } : s));
+    };
+    
+    const handleResizeEnd = () => {
+      if (isTouch) {
+        document.removeEventListener('touchmove', handleResizeMove);
+        document.removeEventListener('touchend', handleResizeEnd);
+      } else {
+        document.removeEventListener('mousemove', handleResizeMove);
+        document.removeEventListener('mouseup', handleResizeEnd);
+      }
+    };
+    
+    if (isTouch) {
+      document.addEventListener('touchmove', handleResizeMove, { passive: false });
+      document.addEventListener('touchend', handleResizeEnd);
+    } else {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+    }
   };
 
   const savePdfWithSignatures = async () => {
@@ -351,7 +411,7 @@ export default function SignPdf({ onBack, addToast }) {
         ) : isProcessing && !pdfDocInstance ? (
           <Loader message="Sedang memuat dokumen PDF..." />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '32px', minHeight: '55vh' }}>
+          <div className="tool-layout-grid">
             {/* Viewer Column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
@@ -423,7 +483,8 @@ export default function SignPdf({ onBack, addToast }) {
                       .map((sig) => (
                         <div
                           key={sig.id}
-                          onMouseDown={(e) => handleSigMouseDown(sig.id, e)}
+                          onMouseDown={(e) => handleSigDragStart(sig.id, e)}
+                          onTouchStart={(e) => handleSigDragStart(sig.id, e)}
                           onClick={(e) => e.stopPropagation()}
                           style={{
                             position: 'absolute',
@@ -438,7 +499,8 @@ export default function SignPdf({ onBack, addToast }) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            touchAction: 'none'
                           }}
                         >
                           <img 
@@ -475,36 +537,21 @@ export default function SignPdf({ onBack, addToast }) {
                           {/* Resize drag handles (simple width/height adjustments) */}
                           {selectedSigId === sig.id && (
                             <div 
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                const startX = e.clientX;
-                                const startWidth = sig.width;
-                                const startHeight = sig.height;
-                                
-                                const handleResizeMove = (moveEvent) => {
-                                  const dx = moveEvent.clientX - startX;
-                                  const newWidth = Math.max(50, startWidth + dx);
-                                  const newHeight = newWidth / 2; // maintain 2:1 ratio
-                                  setPlacedSignatures(prev => prev.map(s => s.id === sig.id ? { ...s, width: newWidth, height: newHeight } : s));
-                                };
-                                
-                                const handleResizeUp = () => {
-                                  document.removeEventListener('mousemove', handleResizeMove);
-                                  document.removeEventListener('mouseup', handleResizeUp);
-                                };
-                                
-                                document.addEventListener('mousemove', handleResizeMove);
-                                document.addEventListener('mouseup', handleResizeUp);
-                              }}
+                              onMouseDown={(e) => handleResizeStart(sig.id, e)}
+                              onTouchStart={(e) => handleResizeStart(sig.id, e)}
                               style={{
                                 position: 'absolute',
                                 right: '-4px',
                                 bottom: '-4px',
-                                width: '8px',
-                                height: '8px',
+                                width: '12px',
+                                height: '12px',
                                 background: 'var(--primary)',
                                 borderRadius: '50%',
-                                cursor: 'se-resize'
+                                cursor: 'se-resize',
+                                touchAction: 'none',
+                                border: '2px solid white',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                                zIndex: 10
                               }}
                             />
                           )}

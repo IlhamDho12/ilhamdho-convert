@@ -158,14 +158,8 @@ export default function JpgToPdf({ onBack, addToast }) {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '16px'
-            }}>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+             <div className="tool-action-header">
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <label style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   Ukuran Halaman:
                 </label>
@@ -215,7 +209,7 @@ export default function JpgToPdf({ onBack, addToast }) {
               <>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 1fr))',
                   gap: '20px',
                   maxHeight: '50vh',
                   overflowY: 'auto',

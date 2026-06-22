@@ -239,8 +239,10 @@ export default function EditPdf({ onBack, addToast }) {
   const handleCustomTextDrag = (id, e) => {
     e.stopPropagation();
     setActiveTextId(id);
-    const startX = e.clientX;
-    const startY = e.clientY;
+    
+    const isTouch = e.type === 'touchstart';
+    const startX = isTouch ? e.touches[0].clientX : e.clientX;
+    const startY = isTouch ? e.touches[0].clientY : e.clientY;
 
     const txtIndex = customTexts.findIndex(t => t.id === id);
     if (txtIndex === -1) return;
@@ -248,9 +250,11 @@ export default function EditPdf({ onBack, addToast }) {
     const originalX = customTexts[txtIndex].x;
     const originalY = customTexts[txtIndex].y;
 
-    const handleMouseMove = (moveEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+    const handleMove = (moveEvent) => {
+      const currentX = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const currentY = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientY : moveEvent.clientY;
+      const dx = currentX - startX;
+      const dy = currentY - startY;
 
       setCustomTexts(prev => prev.map(t => {
         if (t.id === id) {
@@ -260,13 +264,23 @@ export default function EditPdf({ onBack, addToast }) {
       }));
     };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+    const handleEnd = () => {
+      if (isTouch) {
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
+      } else {
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
+      }
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    if (isTouch) {
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchend', handleEnd);
+    } else {
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+    }
   };
 
   const saveEditedPdf = async () => {
@@ -387,7 +401,7 @@ export default function EditPdf({ onBack, addToast }) {
         ) : isProcessing && !pdfDocInstance ? (
           <Loader message="Sedang memuat dokumen PDF..." />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '32px', minHeight: '55vh' }}>
+          <div className="tool-layout-grid">
             {/* PDF Viewer column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
@@ -536,6 +550,7 @@ export default function EditPdf({ onBack, addToast }) {
                         <div
                           key={t.id}
                           onMouseDown={(e) => handleCustomTextDrag(t.id, e)}
+                          onTouchStart={(e) => handleCustomTextDrag(t.id, e)}
                           onClick={(e) => e.stopPropagation()}
                           style={{
                             position: 'absolute',
@@ -554,7 +569,8 @@ export default function EditPdf({ onBack, addToast }) {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            zIndex: 3
+                            zIndex: 3,
+                            touchAction: 'none'
                           }}
                         >
                           <span>{t.text}</span>

@@ -102,13 +102,7 @@ export default function MergePdf({ onBack, addToast }) {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '16px'
-            }}>
+             <div className="tool-action-header">
               <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Daftar Dokumen ({pdfFiles.length} file)</h4>
 
               <div style={{ display: 'flex', gap: '12px' }}>
@@ -140,15 +134,7 @@ export default function MergePdf({ onBack, addToast }) {
               <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pdfFiles.map((fileObj, idx) => (
-                    <div key={fileObj.id} className="glass" style={{
-                      padding: '16px 20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderRadius: '12px',
-                      border: '1px solid var(--border-color)',
-                      background: 'rgba(255,255,255,0.01)'
-                    }}>
+                    <div key={fileObj.id} className="glass file-list-row">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <span style={{
                           background: 'rgba(139, 92, 246, 0.1)',
