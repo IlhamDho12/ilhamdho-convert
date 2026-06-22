@@ -3,7 +3,7 @@ import { MessageSquare, Send, ShieldAlert, Award } from 'lucide-react';
 
 // Ganti URL ini dengan URL Web App Google Apps Script Anda untuk menyimpan secara online
 // Contoh: "https://script.google.com/macros/s/AKfycb.../exec"
-const GOOGLE_SCRIPT_URL = "";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMGo-nk0uGzBU18z6d9iq93vqpY2gUb3EeXjSNS_fPu5WJPzpA-8vagakxZZ-lt_fR/exec";
 
 export default function Comments() {
   const [comments, setComments] = useState([]);
