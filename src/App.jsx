@@ -10,6 +10,7 @@ import EditPdf from './components/EditPdf';
 import WordToPdf from './components/WordToPdf';
 import PdfToWord from './components/PdfToWord';
 import Toast from './components/Shared/Toast';
+import Comments from './components/Shared/Comments';
 import { ShieldCheck } from 'lucide-react';
 
 export default function App() {
@@ -119,6 +120,7 @@ export default function App() {
       {/* Main Content Area */}
       <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         {renderActiveTool()}
+        {activeTool === null && <Comments pageId="dashboard" pageTitle="ilhamdho convert - Dashboard" />}
       </main>
 
       {/* Modern Premium Footer */}
