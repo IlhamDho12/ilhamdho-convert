@@ -45,7 +45,7 @@ export default function Comments({ pageId, pageTitle }) {
         id="cusdis_thread"
         data-host="https://cusdis.com"
         // Replace this ID with your actual App ID in Cusdis
-        data-app-id="ef8ef81c-8b8a-4467-9d7a-placeholder"
+        data-app-id="cce58b60-b771-4960-ae6e-232f0dbddb04"
         data-page-id={pageId}
         data-page-url={window.location.href}
         data-page-title={pageTitle}
