@@ -5,10 +5,37 @@ import { MessageSquare, Send, ShieldAlert, Award } from 'lucide-react';
 // Contoh: "https://script.google.com/macros/s/AKfycb.../exec"
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMGo-nk0uGzBU18z6d9iq93vqpY2gUb3EeXjSNS_fPu5WJPzpA-8vagakxZZ-lt_fR/exec";
 
+const getCategoryDetails = (cat) => {
+  switch (cat) {
+    case 'bug':
+      return {
+        label: 'Laporan Bug 🐛',
+        bg: 'rgba(244, 63, 94, 0.15)',
+        color: 'var(--accent-rose)',
+        border: 'rgba(244, 63, 94, 0.2)'
+      };
+    case 'suggestion':
+      return {
+        label: 'Kritik & Saran 💡',
+        bg: 'rgba(139, 92, 246, 0.15)',
+        color: 'var(--primary)',
+        border: 'rgba(139, 92, 246, 0.2)'
+      };
+    case 'general':
+    default:
+      return {
+        label: 'Komentar / Apresiasi 💬',
+        bg: 'rgba(6, 182, 212, 0.15)',
+        color: 'var(--accent-cyan)',
+        border: 'rgba(6, 182, 212, 0.2)'
+      };
+  }
+};
+
 export default function Comments() {
   const [comments, setComments] = useState([]);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('bug'); // 'bug', 'suggestion'
+  const [category, setCategory] = useState('general');
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +150,7 @@ export default function Comments() {
   };
 
   return (
-    <div className="glass" style={{ 
+    <div id="comments-section" className="glass" style={{ 
       marginTop: '48px', 
       padding: '32px', 
       display: 'flex', 
@@ -136,10 +163,10 @@ export default function Comments() {
     }}>
       <div>
         <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '8px' }}>
-          Apakah Anda menemukan bug?
+          Tulis Komentar & Masukan
         </h3>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
-          Berikan masukan, saran, kritik, atau laporkan bug yang Anda temui agar web ini semakin "ngebut" dan optimal!
+          Bagikan pengalaman Anda, berikan apresiasi, saran, atau laporkan bug yang Anda temukan di web ini!
         </p>
       </div>
 
@@ -186,18 +213,19 @@ export default function Comments() {
                 cursor: 'pointer'
               }}
             >
-              <option value="bug">🐛 Laporan Bug</option>
+              <option value="general">💬 Komentar / Apresiasi</option>
               <option value="suggestion">💡 Kritik & Saran</option>
+              <option value="bug">🐛 Laporan Bug</option>
             </select>
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Isi Masukan / Detail Bug:
+            Pesan / Komentar Anda:
           </label>
           <textarea 
-            placeholder="Tulis kritik, saran, atau langkah mereproduksi bug di sini secara detail..."
+            placeholder="Tulis testimoni, apresiasi, kritik, saran, atau langkah mereproduksi bug di sini..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             required
@@ -262,17 +290,22 @@ export default function Comments() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{item.name}</span>
-                    <span style={{
-                      background: item.category === 'bug' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(139, 92, 246, 0.15)',
-                      color: item.category === 'bug' ? 'var(--accent-rose)' : 'var(--primary)',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      border: `1px solid ${item.category === 'bug' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(139, 92, 246, 0.1)'}`
-                    }}>
-                      {item.category === 'bug' ? 'Bug Report' : 'Kritik & Saran'}
-                    </span>
+                    {(() => {
+                      const catDetails = getCategoryDetails(item.category);
+                      return (
+                        <span style={{
+                          background: catDetails.bg,
+                          color: catDetails.color,
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          border: `1px solid ${catDetails.border}`
+                        }}>
+                          {catDetails.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     {new Date(item.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}

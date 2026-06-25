@@ -8,7 +8,8 @@ import {
   Layers, 
   Scissors, 
   Minimize2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  MessageSquare
 } from 'lucide-react';
 
 const tools = [
@@ -114,6 +115,27 @@ export default function Dashboard({ onSelectTool }) {
           Alat pengolah dokumen & gambar serbaguna. Berjalan <strong>100% lokal di browser Anda</strong>. 
           Cepat ("ngebut"), tanpa upload ke server, dan sepenuhnya aman.
         </p>
+
+        <button 
+          onClick={() => {
+            document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="btn btn-secondary glass"
+          style={{ 
+            marginTop: '20px', 
+            borderRadius: '30px', 
+            padding: '8px 24px', 
+            fontSize: '0.88rem',
+            background: 'rgba(139, 92, 246, 0.1)',
+            color: '#c084fc',
+            border: '1px solid rgba(139, 92, 246, 0.2)',
+            fontWeight: 600,
+            gap: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          <MessageSquare size={16} /> Lihat & Tulis Komentar
+        </button>
       </div>
 
       <div style={{
